@@ -1,10 +1,10 @@
 from pdf2image import convert_from_path
-from deskew import determine_skew
 from PIL import Image, ImageOps
 from statistics import median
+from io import BytesIO
 import numpy as np
-import img2pdf
 import cv2
+import tempfile
 
 
 def deskew_image(image):
@@ -50,19 +50,22 @@ def deskew_image(image):
 
 
 
-def deskew_pdf(input_pdf, output_pdf):
-    # Convert PDF to a list of images
-    images = convert_from_path(input_pdf)
+def deskew_pdf(input_pdf_bytes):
+    # Step 1: Convert the in-memory PDF to a list of images
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
+        temp_pdf.write(input_pdf_bytes)
+        temp_pdf_path = temp_pdf.name
 
-    # Deskew each image
-    deskewed_images = []
-    for image in images:
-        deskewed_image = deskew_image(image)
-        deskewed_images.append(deskewed_image)
+    images = convert_from_path(temp_pdf_path)
 
-    # Convert images back to PDF
-    deskewed_images[0].save(output_pdf, save_all=True, append_images=deskewed_images[1:])
+    # Step 2: Deskew each image
+    deskewed_images = [deskew_image(image) for image in images]
+
+    # Step 3: Convert deskewed images back to a PDF in memory
+    output_pdf = BytesIO()
+    deskewed_images[0].save(output_pdf, format='PDF', save_all=True, append_images=deskewed_images[1:])
+
+    # Step 4: Return the in-memory PDF bytes
+    return output_pdf.getvalue()
 
 
-# Example usage
-deskew_pdf("input.pdf", "output_test_2.pdf")
