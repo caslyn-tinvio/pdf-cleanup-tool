@@ -1,0 +1,5 @@
+deskew
+pandas
+pdf2image
+img2pdf
+streamlit
