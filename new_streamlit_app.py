@@ -17,7 +17,7 @@ def deskew_with_unpaper(image_bytes):
     temp_output_path = tempfile.mktemp(suffix=".png")
 
     # Run unpaper with the --overwrite flag to deskew the image
-    subprocess.run(['unpaper', '--overwrite', '--no-noise-scan', temp_input_path, temp_output_path])
+    subprocess.run(['unpaper', '--no-noise-scan', temp_input_path, temp_output_path])
 
     # Read the processed (deskewed) image bytes
     with open(temp_output_path, 'rb') as f:
